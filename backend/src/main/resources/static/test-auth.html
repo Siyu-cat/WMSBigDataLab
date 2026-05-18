@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>增删改查测试</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 8px 15px; margin: 3px; cursor: pointer; }
+        input, textarea { padding: 8px; margin: 5px; width: 200px; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; max-height: 200px; }
+        h3 { margin-top: 20px; border-bottom: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>增删改查测试（需要登录）</h1>
+
+    <h3>1. 分类管理</h3>
+    <button onclick="addCategory()">新增分类</button>
+    <button onclick="updateCategory()">修改分类</button>
+    <button onclick="deleteCategory()">删除分类</button>
+
+    <h3>2. 词条管理</h3>
+    <button onclick="addEntry()">新增词条</button>
+    <button onclick="updateEntry()">修改词条</button>
+    <button onclick="deleteEntry()">删除词条</button>
+
+    <h3>3. 批注管理</h3>
+    <button onclick="addAnnotation()">新增批注</button>
+    <button onclick="updateAnnotation()">修改批注</button>
+    <button onclick="deleteAnnotation()">删除批注</button>
+
+    <h3>4. 版本管理</h3>
+    <button onclick="getVersions()">查看版本</button>
+    <button onclick="restoreVersion()">恢复版本</button>
+
+    <h3>5. 媒体管理</h3>
+    <button onclick="getMediaList()">媒体列表</button>
+    <input type="file" id="mediaFile">
+    <button onclick="uploadMedia()">上传文件</button>
+
+    <h3>结果：</h3>
+    <pre id="result">点击按钮测试...</pre>
+
+    <script>
+    let token = "";
+    let lastCategoryId = null;
+    let lastEntryId = null;
+    let lastAnnotationId = null;
+
+    async function login() {
+        const resp = await fetch('http://localhost:8080/api/admin/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username: 'admin', password: '123456'})
+        });
+        const data = await resp.json();
+        if (data.code === 200) {
+            token = data.data.token;
+            document.getElementById('result').textContent = '登录成功！Token: ' + token.substring(0, 30) + '...';
+        }
+    }
+    login();
+
+    async function testApi(method, url, body = null) {
+        try {
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            };
+            if (body) options.body = JSON.stringify(body);
+
+            const resp = await fetch('http://localhost:8080' + url, options);
+            const data = await resp.json();
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+            document.getElementById('result').textContent = '错误: ' + e.message;
+        }
+    }
+
+    // 分类 - 新增后保存ID
+    async function addCategory() {
+        const resp = await fetch('http://localhost:8080/api/category', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+            body: JSON.stringify({name: '测试分类' + Date.now(), parentId: null, sortOrder: 0})
+        });
+        const data = await resp.json();
+        if (data.code === 200 && data.data && data.data.id) {
+            lastCategoryId = data.data.id;
+        }
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function updateCategory() {
+        if (!lastCategoryId) { document.getElementById('result').textContent = '请先新增分类'; return; }
+        await testApi('PUT', '/api/category', {id: lastCategoryId, name: '修改后的分类', parentId: null, sortOrder: 1});
+    }
+
+    async function deleteCategory() {
+        if (!lastCategoryId) { document.getElementById('result').textContent = '请先新增分类'; return; }
+        await testApi('DELETE', '/api/category/' + lastCategoryId);
+    }
+
+    // 词条
+    async function addEntry() {
+        const resp = await fetch('http://localhost:8080/api/entry', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+            body: JSON.stringify({title: '测试词条' + Date.now(), summary: '摘要', content: '内容', categoryId: 2})
+        });
+        const data = await resp.json();
+        if (data.code === 200 && data.data && data.data.id) {
+            lastEntryId = data.data.id;
+        }
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function updateEntry() {
+        if (!lastEntryId) { document.getElementById('result').textContent = '请先新增词条'; return; }
+        await testApi('PUT', '/api/entry', {id: lastEntryId, title: '修改后的词条', summary: '摘要', content: '内容', categoryId: 2});
+    }
+
+    async function deleteEntry() {
+        if (!lastEntryId) { document.getElementById('result').textContent = '请先新增词条'; return; }
+        await testApi('DELETE', '/api/entry/' + lastEntryId);
+    }
+
+    // 批注
+    async function addAnnotation() {
+        const resp = await fetch('http://localhost:8080/api/annotation', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+            body: JSON.stringify({entryId: 1, content: '新批注' + Date.now()})
+        });
+        const data = await resp.json();
+        if (data.code === 200 && data.data && data.data.id) {
+            lastAnnotationId = data.data.id;
+        }
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function updateAnnotation() {
+        if (!lastAnnotationId) { document.getElementById('result').textContent = '请先新增批注'; return; }
+        await testApi('PUT', '/api/annotation', {id: lastAnnotationId, entryId: 1, content: '修改后的批注'});
+    }
+
+    async function deleteAnnotation() {
+        if (!lastAnnotationId) { document.getElementById('result').textContent = '请先新增批注'; return; }
+        await testApi('DELETE', '/api/annotation/' + lastAnnotationId);
+    }
+
+    // 版本
+    async function getVersions() { await testApi('GET', '/api/version/list/1'); }
+    async function restoreVersion() { await testApi('POST', '/api/version/restore/1'); }
+
+    // 媒体
+    async function getMediaList() { await testApi('GET', '/api/media/list'); }
+    async function uploadMedia() {
+        const file = document.getElementById('mediaFile').files[0];
+        if (!file) { document.getElementById('result').textContent = '请先选择文件'; return; }
+        const formData = new FormData();
+        formData.append('file', file);
+        const resp = await fetch('http://localhost:8080/api/media/upload', {
+            method: 'POST',
+            headers: {'Authorization': 'Bearer ' + token},
+            body: formData
+        });
+        const data = await resp.json();
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    }
+    </script>
+</body>
+</html>

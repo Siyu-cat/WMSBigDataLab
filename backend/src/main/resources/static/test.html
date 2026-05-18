@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>API测试</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow: auto; max-height: 300px; }
+        h3 { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>公开接口测试（无需登录）</h1>
+
+    <h3>1. 分类树</h3>
+    <button onclick="testApi('/api/category/tree')">获取分类树</button>
+
+    <h3>2. 词条详情</h3>
+    <button onclick="testApi('/api/entry/1')">获取词条(ID=1)</button>
+
+    <h3>3. 词条列表</h3>
+    <button onclick="testApi('/api/entry/page?page=1&size=10')">分页查询</button>
+
+    <h3>4. 搜索</h3>
+    <button onclick="testApi('/api/entry/search?keyword=扬笑')">搜索"扬笑"</button>
+
+    <h3>5. 热门词条</h3>
+    <button onclick="testApi('/api/entry/hot?limit=5')">热门5条</button>
+
+    <h3>6. 批注列表</h3>
+    <button onclick="testApi('/api/annotation/list/1')">词条1的批注</button>
+
+    <h3>7. 版本列表</h3>
+    <button onclick="testApi('/api/version/list/1')">词条1的版本</button>
+
+    <h3>结果：</h3>
+    <pre id="result">点击按钮测试...</pre>
+
+    <script>
+    async function testApi(url) {
+        document.getElementById('result').textContent = '加载中...';
+        try {
+            const response = await fetch('http://localhost:8080' + url);
+            const data = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+            document.getElementById('result').textContent = '错误: ' + e.message;
+        }
+    }
+    </script>
+</body>
+</html>

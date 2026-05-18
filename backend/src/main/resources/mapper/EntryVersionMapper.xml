@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wmsbigdatalab.mapper.EntryVersionMapper">
+
+    <select id="selectMaxVersion" resultType="java.lang.Integer">
+        SELECT COALESCE(MAX(version_num), 0) FROM entry_version
+        WHERE entry_id = #{entryId} AND deleted_at IS NULL
+    </select>
+</mapper>

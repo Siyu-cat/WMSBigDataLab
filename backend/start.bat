@@ -1,0 +1,1 @@
+java -jar "%~dp0target\WMSBigDataLab-1.0.0.jar"
