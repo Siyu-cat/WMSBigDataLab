@@ -84,4 +84,34 @@ public class AdminController {
             return Result.error(401, "Token无效");
         }
     }
+
+    @PostMapping("/register")
+    public Result<?> register(@RequestBody Map<String, String> registerData) {
+        try {
+            long count = adminService.count();
+            if (count > 0) {
+                return Result.error(403, "管理员已存在，无法重复创建");
+            }
+
+            String username = registerData.get("username");
+            String password = registerData.get("password");
+
+            if (username == null || username.trim().isEmpty()) {
+                return Result.error(400, "用户名不能为空");
+            }
+            if (password == null || password.trim().isEmpty()) {
+                return Result.error(400, "密码不能为空");
+            }
+
+            boolean success = adminService.register(username.trim(), password);
+            if (success) {
+                return Result.success("注册成功");
+            } else {
+                return Result.error(500, "注册失败");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(500, "注册失败: " + e.getMessage());
+        }
+    }
 }

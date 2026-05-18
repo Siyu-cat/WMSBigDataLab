@@ -1,4 +1,4 @@
-import { CategoryTreeNode } from './types';
+import type { CategoryTreeNode } from './types';
 
 export const mockCategoryTree: CategoryTreeNode[] = [
   {

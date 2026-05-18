@@ -42,7 +42,7 @@ const PhoneLayout: React.FC = () => {
       }}>
         {isSubPage ? (
           <div
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/')}
             style={{
               position: 'absolute',
               left: '16px',

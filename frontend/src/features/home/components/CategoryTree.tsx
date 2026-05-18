@@ -1,5 +1,5 @@
 import React from 'react';
-import { CategoryTreeNode } from '../types';
+import type { CategoryTreeNode, EntrySimple } from '../types';
 import CategoryButton from './CategoryButton';
 import EntryCard from './EntryCard';
 
@@ -8,7 +8,7 @@ interface CategoryTreeProps {
   expandedIds: string[];
   selectedEntryId: string | null;
   onToggleCategory: (id: string) => void;
-  onEntryClick: (entry: { id: string; name: string }, categoryName: string) => void;
+  onEntryClick: (entry: EntrySimple, categoryName: string) => void;
 }
 
 const CategoryTree: React.FC<CategoryTreeProps> = ({
@@ -34,16 +34,20 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
         {isExpanded && (
           <div style={{ marginTop: '4px' }}>
             {category.children?.map(child => renderCategory(child, level + 1))}
-            {category.entries?.map(entry => (
-              <EntryCard
-                key={entry.id}
-                id={entry.id}
-                name={entry.name}
-                isSelected={selectedEntryId === entry.id}
-                paddingLeft={entryPaddingLeft}
-                onClick={() => onEntryClick(entry, category.name)}
-              />
-            ))}
+            {category.entries?.map(entry => {
+              const name = 'title' in entry ? (entry.title || entry.summary || '未命名') : entry.name;
+              const eid = Number(entry.id);
+              return (
+                <EntryCard
+                  key={entry.id}
+                  id={eid}
+                  name={name}
+                  isSelected={selectedEntryId === String(eid)}
+                  paddingLeft={entryPaddingLeft}
+                  onClick={() => onEntryClick({ id: eid, title: name } as EntrySimple, category.name)}
+                />
+              );
+            })}
           </div>
         )}
       </div>

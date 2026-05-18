@@ -22,7 +22,7 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        if (path.startsWith("/api/admin/login") || path.startsWith("/api/media/uploads")) {
+        if (path.startsWith("/api/admin/login") || path.startsWith("/api/admin/register") || path.startsWith("/api/media/uploads")) {
             return true;
         }
 

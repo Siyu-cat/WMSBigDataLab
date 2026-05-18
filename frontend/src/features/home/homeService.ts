@@ -1,5 +1,5 @@
 import { get } from '../../services/request';
-import { CategoryTreeNode } from './types';
+import type { CategoryTreeNode } from './types';
 import { mockCategoryTree } from './mockData';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';

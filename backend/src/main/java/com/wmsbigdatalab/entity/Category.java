@@ -20,6 +20,9 @@ public class Category {
     @TableField(exist = false)
     private List<Category> children;
 
+    @TableField(exist = false)
+    private List<EntrySimple> entries;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 

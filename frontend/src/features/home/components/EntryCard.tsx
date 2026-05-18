@@ -1,14 +1,14 @@
 import React from 'react';
 
 interface EntryCardProps {
-  id: string;
+  id: string | number;
   name: string;
   isSelected: boolean;
   paddingLeft: number;
   onClick: () => void;
 }
 
-const EntryCard: React.FC<EntryCardProps> = ({ id, name, isSelected, paddingLeft, onClick }) => {
+const EntryCard: React.FC<EntryCardProps> = ({ name, isSelected, paddingLeft, onClick }) => {
   return (
     <div
       onClick={onClick}
