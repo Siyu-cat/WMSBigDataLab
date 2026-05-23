@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wmsbigdatalab.entity.Entry;
 import com.wmsbigdatalab.entity.EntryAnnotation;
 import com.wmsbigdatalab.entity.EntryVersion;
+import com.wmsbigdatalab.mapper.CategoryMapper;
 import com.wmsbigdatalab.mapper.EntryMapper;
 import com.wmsbigdatalab.mapper.EntryVersionMapper;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,10 +22,12 @@ public class EntryService extends ServiceImpl<EntryMapper, Entry> {
 
     private final EntryVersionMapper entryVersionMapper;
     private final EntryAnnotationService entryAnnotationService;
+    private final CategoryMapper categoryMapper;
 
-    public EntryService(EntryVersionMapper entryVersionMapper, EntryAnnotationService entryAnnotationService) {
+    public EntryService(EntryVersionMapper entryVersionMapper, EntryAnnotationService entryAnnotationService, CategoryMapper categoryMapper) {
         this.entryVersionMapper = entryVersionMapper;
         this.entryAnnotationService = entryAnnotationService;
+        this.categoryMapper = categoryMapper;
     }
 
     @Cacheable(value = "entry", key = "'page:' + #page + ':' + #size")
@@ -61,6 +64,15 @@ public class EntryService extends ServiceImpl<EntryMapper, Entry> {
     @Transactional
     @CacheEvict(value = "entry", allEntries = true)
     public Entry saveEntry(Entry entry) {
+        if (entry.getCategoryId() != null) {
+            var category = categoryMapper.selectById(entry.getCategoryId());
+            if (category == null) {
+                throw new RuntimeException("分类不存在: " + entry.getCategoryId());
+            }
+        }
+        if (entry.getViewCount() == null) {
+            entry.setViewCount(0);
+        }
         save(entry);
         if (entry.getId() != null) {
             EntryVersion version = createVersion(entry, 1);

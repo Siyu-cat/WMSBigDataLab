@@ -50,7 +50,7 @@ export async function getEntry(id: number): Promise<EntryData> {
       id,
       title: name,
       content: '<p>这是模拟的词条内容，可以在编辑器中修改。</p>',
-      categoryId: 1,
+      categoryId: undefined,
     };
   }
   const res = await get<EntryData>(`/entry/${id}`);
@@ -70,7 +70,7 @@ export async function getAllEntries(keyword?: string): Promise<PageData> {
         id: parseInt(String(e.id).replace('e', ''), 10),
         name: 'title' in e ? e.title : e.name,
         title: 'title' in e ? e.title : e.name,
-        categoryId: i % 6,
+        categoryId: 0,
       }));
     return { records: entries, total: entries.length };
   }

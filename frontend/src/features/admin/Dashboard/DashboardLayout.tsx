@@ -11,6 +11,7 @@ const DashboardLayout: React.FC = () => {
   const menuItems = [
     { key: 'dashboard', label: '数据概览', path: '/admin/dashboard' },
     { key: 'entries', label: '词条管理', path: '/admin/entries' },
+    { key: 'categories', label: '分类管理', path: '/admin/categories' },
   ];
 
   const handleLogout = () => {
@@ -66,6 +67,16 @@ const DashboardLayout: React.FC = () => {
             }}
           >
             退出登录
+          </div>
+          <div
+            onClick={() => window.open('/', '_blank')}
+            style={{
+              padding: '12px 24px',
+              color: 'rgba(255,255,255,0.65)',
+              cursor: 'pointer',
+            }}
+          >
+            前往用户界面
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import LoginPage from './features/admin/Login/LoginPage';
 import DashboardLayout from './features/admin/Dashboard/DashboardLayout';
 import Dashboard from './features/admin/Dashboard';
 import EntryManager from './features/admin/EntryManager';
+import CategoryManager from './features/admin/CategoryManager';
 import EditorPage from './features/editor/components/EditorPage';
 import { getToken } from './services/auth';
 
@@ -40,6 +41,7 @@ function App() {
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="entries" element={<EntryManager />} />
+              <Route path="categories" element={<CategoryManager />} />
               <Route path="editor" element={<EditorPage />} />
               <Route path="editor/:id" element={<EditorPage />} />
             </Route>
@@ -56,6 +58,7 @@ function App() {
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="entries" element={<EntryManager />} />
+              <Route path="categories" element={<CategoryManager />} />
               <Route path="editor" element={<EditorPage />} />
               <Route path="editor/:id" element={<EditorPage />} />
             </Route>

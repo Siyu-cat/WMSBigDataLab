@@ -62,17 +62,31 @@ const PhoneLayout: React.FC = () => {
         }}>{getTitle()}</h1>
 
         {!isSubPage && (
-          <div
-            onClick={() => navigate('/search')}
-            style={{
-              position: 'absolute',
-              right: '16px',
-              cursor: 'pointer',
-              padding: '4px',
-            }}
-          >
-            <SearchIcon color="#fff" size={22} />
-          </div>
+          <>
+            <div
+              onClick={() => navigate('/search')}
+              style={{
+                position: 'absolute',
+                right: '40px',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
+            >
+              <SearchIcon color="#fff" size={22} />
+            </div>
+            <div
+              onClick={() => window.open('/admin/login', '_blank')}
+              style={{
+                position: 'absolute',
+                right: '16px',
+                cursor: 'pointer',
+                color: 'rgba(255,255,255,0.5)',
+                fontSize: '12px',
+              }}
+            >
+              管理
+            </div>
+          </>
         )}
       </div>
 

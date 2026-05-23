@@ -23,6 +23,5 @@ public class EntryVersion {
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    @TableLogic
     private LocalDateTime deletedAt;
 }

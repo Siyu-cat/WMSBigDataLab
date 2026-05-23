@@ -102,6 +102,17 @@ const DesktopLayout: React.FC = () => {
               fontWeight: 500,
               margin: 0,
             }}>大数据中心</h1>
+            <div
+              onClick={() => window.open('/admin/login', '_blank')}
+              style={{
+                marginTop: '8px',
+                color: 'rgba(255,255,255,0.5)',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
+            >
+              管理员入口
+            </div>
           </div>
 
           <div style={{

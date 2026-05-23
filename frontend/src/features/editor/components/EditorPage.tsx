@@ -28,6 +28,7 @@ const EditorPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
   const editor = useEditor({
@@ -51,7 +52,7 @@ const EditorPage: React.FC = () => {
         editor.commands.setContent(data.content);
       }
     } catch {
-      alert('加载词条失败');
+      setError('加载词条失败');
     } finally {
       setFetching(false);
     }
@@ -78,6 +79,13 @@ const EditorPage: React.FC = () => {
       setCategoriesError(`加载分类失败: ${msg}`);
     }
   }, []);
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
   useEffect(() => {
     loadCategories();
@@ -112,11 +120,11 @@ const EditorPage: React.FC = () => {
 
       if (isEditing) {
         await updateEntry(Number(id), data);
-        alert('保存成功');
+        setSuccess('词条保存成功');
       } else {
-        const res = await createEntry(data);
-        alert('创建成功');
-        navigate(`/admin/editor/${res.id}`);
+        await createEntry(data);
+        setSuccess('词条创建成功');
+        navigate('/admin/entries');
       }
     } catch (err: unknown) {
       let msg = '保存失败，请稍后重试';
@@ -143,6 +151,11 @@ const EditorPage: React.FC = () => {
       {error && (
         <div style={{ marginBottom: '16px', padding: '12px 16px', background: '#fff2f0', border: '1px solid #ffccc7', borderRadius: '6px', color: '#ff4d4f' }}>
           {error}
+        </div>
+      )}
+      {success && (
+        <div style={{ marginBottom: '16px', padding: '12px 16px', background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: '6px', color: '#52c41a' }}>
+          {success}
         </div>
       )}
       <div style={{ marginBottom: '16px' }}>

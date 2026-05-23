@@ -32,6 +32,9 @@ const createRequest = (): AxiosInstance => {
 
   instance.interceptors.response.use(
     (response: AxiosResponse<ResponseData>) => {
+      if (response.data && response.data.code !== 200) {
+        return Promise.reject(new Error(response.data.message || '请求失败'));
+      }
       return response;
     },
     (error) => {

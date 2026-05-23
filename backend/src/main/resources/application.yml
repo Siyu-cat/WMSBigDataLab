@@ -32,11 +32,6 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
-  global-config:
-    db-config:
-      logic-delete-field: deletedAt
-      logic-delete-value: "now()"
-      logic-not-delete-value: "null"
   mapper-locations: classpath:mapper/**/*.xml
 
 wiki:
