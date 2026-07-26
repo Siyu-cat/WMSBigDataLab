@@ -95,10 +95,10 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
                             key={entry.id}
                             id={eid}
                             name={name}
-                            isSelected={selectedSlug === entry.slug}
+                            isSelected={selectedSlug === ('slug' in entry ? entry.slug : '')}
                             paddingLeft={54}
                             gap={spacing.entryGap}
-                            onClick={() => onEntryClick({ id: eid, slug: entry.slug || '', title: name } as EntrySimple, child.name)}
+                            onClick={() => onEntryClick({ id: eid, slug: 'slug' in entry ? entry.slug || '' : '', title: name } as EntrySimple, child.name)}
                           />
                         );
                       })}

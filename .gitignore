@@ -19,9 +19,14 @@ backend/uploads/
 .idea/
 .DS_Store
 
-# Environment (keep .env but not secrets)
+# Environment
+.env
+.env.*
 *.local
 application-local.yml
+
+# Git credentials
+.git-credentials
 
 # Compiled class files
 *.class
