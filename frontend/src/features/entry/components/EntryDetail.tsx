@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { get } from '../../../services/request';
 import LocationPin from '../../../components/icons/LocationPin';
+import BackArrow from '../../../components/icons/BackArrow';
 
 interface EntryDetailProps {
-  entryId?: string;
+  slug?: string;
+  onBack?: () => void;
 }
 
 interface Entry {
@@ -13,24 +15,21 @@ interface Entry {
   summary: string;
   content: string;
   categoryId: number;
-  viewCount: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
-const EntryDetail: React.FC<EntryDetailProps> = ({ entryId }) => {
-  const { id: routeId } = useParams<{ id: string }>();
-  const id = entryId || routeId;
+const EntryDetail: React.FC<EntryDetailProps> = ({ slug: propSlug, onBack }) => {
+  const { slug: routeSlug } = useParams<{ slug: string }>();
+  const slug = propSlug || routeSlug;
   const [entry, setEntry] = useState<Entry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const loadEntry = useCallback(async () => {
-    if (!id) return;
+    if (!slug) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await get<Entry>(`/entry/${id}`);
+      const res = await get<Entry>(`/entry/slug/${slug}`);
       if (res.code === 200) {
         setEntry(res.data);
       } else {
@@ -41,7 +40,7 @@ const EntryDetail: React.FC<EntryDetailProps> = ({ entryId }) => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     loadEntry();
@@ -102,49 +101,41 @@ const EntryDetail: React.FC<EntryDetailProps> = ({ entryId }) => {
       <div style={{
         position: 'relative',
         zIndex: 2,
-        padding: '24px',
+        padding: '40px',
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
-          marginBottom: '24px',
+          gap: '5px',
+          marginBottom: '33px',
+          marginTop: '-2px',
         }}>
-          <LocationPin color="#fff" size={28} />
-          <h2 style={{ fontSize: '28px', fontWeight: 500, margin: 0 }}>
+          {onBack && (
+            <div
+              onClick={onBack}
+              style={{
+                cursor: 'pointer',
+                padding: '4px',
+                flexShrink: 0,
+                marginTop: '8px',
+              }}
+            >
+              <BackArrow color="#fff" size={34} />
+            </div>
+          )}
+          <div style={{ marginLeft: '-5.5px', marginTop: '6px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }}>
+            <LocationPin color="#fff" size={38} />
+          </div>
+          <h2 style={{ fontSize: '26px', fontWeight: 350, margin: 0 }}>
             {entry.title || '未知词条'}
           </h2>
         </div>
 
         <div style={{
-          fontSize: '14px',
-          color: 'rgba(255,255,255,0.5)',
-          marginBottom: '16px',
-          display: 'flex',
-          gap: '16px',
-        }}>
-          <span>浏览: {entry.viewCount || 0}</span>
-          <span>创建: {entry.createdAt ? new Date(entry.createdAt).toLocaleString('zh-CN') : '-'}</span>
-        </div>
-
-        {entry.summary && (
-          <div style={{
-            padding: '12px 16px',
-            background: 'rgba(255,255,255,0.05)',
-            borderRadius: '8px',
-            marginBottom: '16px',
-            fontSize: '15px',
-            color: 'rgba(255,255,255,0.8)',
-            borderLeft: '3px solid rgba(255,255,255,0.3)',
-          }}>
-            {entry.summary}
-          </div>
-        )}
-
-        <div style={{
-          fontSize: '16px',
-          lineHeight: 1.8,
-          color: 'rgba(255,255,255,0.9)',
+          fontSize: '18px',
+          fontWeight: 350,
+          lineHeight: 1.75,
+          color: '#fff',
         }}>
           <div dangerouslySetInnerHTML={{ __html: entry.content || '<p>暂无内容</p>' }} />
         </div>

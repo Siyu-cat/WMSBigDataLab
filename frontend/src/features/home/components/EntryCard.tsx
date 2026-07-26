@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import { spacing } from './spacingConfig';
 
 interface EntryCardProps {
   id: string | number;
@@ -6,58 +7,63 @@ interface EntryCardProps {
   isSelected: boolean;
   paddingLeft: number;
   onClick: () => void;
+  gap: number;
 }
 
-const EntryCard: React.FC<EntryCardProps> = ({ name, isSelected, paddingLeft, onClick }) => {
+const EntryCard: React.FC<EntryCardProps> = ({ name, isSelected, paddingLeft, onClick, gap }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isSelected && ref.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [isSelected]);
+
   return (
     <div
+      ref={ref}
       onClick={onClick}
       style={{
         display: 'flex',
         alignItems: 'center',
         paddingLeft: `${paddingLeft}px`,
-        marginBottom: '8px',
+        marginBottom: `${gap}px`,
         cursor: 'pointer',
       }}
     >
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '6px',
-        marginRight: '8px',
+        gap: '5px',
+        marginRight: '10px',
         flexShrink: 0,
       }}>
         <span style={{
           display: 'inline-block',
-          width: '28px',
+          width: '30px',
           height: '1px',
-          background: 'rgba(255,255,255,0.6)',
+          background: 'rgba(255,255,255,1)',
         }} />
         <span style={{
           display: 'inline-block',
-          width: '5px',
-          height: '5px',
+          width: '3px',
+          height: '4px',
           borderRadius: '50%',
-          background: 'rgba(255,255,255,0.6)',
+          background: 'rgba(255,255,255,1)',
         }} />
       </div>
       <div
         style={{
-          flex: 1,
-          padding: '12px 20px',
-          background: isSelected ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.85)',
+          padding: '9px 28px',
+          width: '365px',
+          height: '49px',
+          minWidth: '365px',
+          background: isSelected ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,1)',
           borderRadius: '24px',
-          boxShadow: '0 1px 6px rgba(0,0,0,0.08)',
-          transition: 'background 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.95)';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.background = isSelected ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.85)';
+          boxShadow: spacing.entryShadow,
         }}
       >
-        <span style={{ color: '#333', fontSize: '15px' }}>{name}</span>
+        <span style={{ color: '#26272e', fontSize: '19px', fontWeight: 400 }}>{name}</span>
       </div>
     </div>
   );

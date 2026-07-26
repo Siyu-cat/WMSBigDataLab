@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 @Data
 public class EntrySimple {
     private Long id;
+    private String slug;
     private String title;
     private String summary;
     private Integer viewCount;

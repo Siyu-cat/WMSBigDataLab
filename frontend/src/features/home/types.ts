@@ -1,5 +1,6 @@
 export interface EntrySimple {
   id: number;
+  slug: string;
   title: string;
   summary?: string;
   viewCount?: number;

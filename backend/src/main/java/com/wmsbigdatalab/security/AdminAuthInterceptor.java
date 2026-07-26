@@ -39,6 +39,10 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        if (path.matches("/api/entry/slug/[^/]+") && "GET".equals(method)) {
+            return true;
+        }
+
         if (path.startsWith("/api/annotation/list/") && "GET".equals(method)) {
             return true;
         }

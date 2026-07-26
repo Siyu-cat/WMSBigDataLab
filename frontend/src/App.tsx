@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useResponsive } from './hooks/useResponsive';
 import { DesktopLayout, PhoneLayout } from './components/Layout';
+import { LayoutProvider } from './contexts/LayoutContext';
 import Home from './features/home';
 import EntryDetail from './features/entry/components/EntryDetail';
 import SearchPage from './features/search/components/SearchPage';
@@ -24,47 +25,49 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        {isMobile ? (
-          <>
-            <Route path="/" element={<PhoneLayout />}>
-              <Route index element={<Home />} />
-              <Route path="entry/:id" element={<EntryDetail />} />
-              <Route path="search" element={<SearchPage />} />
-            </Route>
-            <Route path="/admin/login" element={<LoginPage />} />
-            <Route path="/admin" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="entries" element={<EntryManager />} />
-              <Route path="categories" element={<CategoryManager />} />
-              <Route path="editor" element={<EditorPage />} />
-              <Route path="editor/:id" element={<EditorPage />} />
-            </Route>
-          </>
-        ) : (
-          <>
-            <Route path="*" element={<DesktopLayout />} />
-            <Route path="/admin/login" element={<LoginPage />} />
-            <Route path="/admin" element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="entries" element={<EntryManager />} />
-              <Route path="categories" element={<CategoryManager />} />
-              <Route path="editor" element={<EditorPage />} />
-              <Route path="editor/:id" element={<EditorPage />} />
-            </Route>
-          </>
-        )}
-      </Routes>
+      <LayoutProvider>
+        <Routes>
+          {isMobile ? (
+            <>
+              <Route path="/" element={<PhoneLayout />}>
+                <Route index element={<Home />} />
+                <Route path="entry/:slug" element={<EntryDetail />} />
+                <Route path="search" element={<SearchPage />} />
+              </Route>
+              <Route path="/admin/login" element={<LoginPage />} />
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="entries" element={<EntryManager />} />
+                <Route path="categories" element={<CategoryManager />} />
+                <Route path="editor" element={<EditorPage />} />
+                <Route path="editor/:id" element={<EditorPage />} />
+              </Route>
+            </>
+          ) : (
+            <>
+              <Route path="*" element={<DesktopLayout />} />
+              <Route path="/admin/login" element={<LoginPage />} />
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="entries" element={<EntryManager />} />
+                <Route path="categories" element={<CategoryManager />} />
+                <Route path="editor" element={<EditorPage />} />
+                <Route path="editor/:id" element={<EditorPage />} />
+              </Route>
+            </>
+          )}
+        </Routes>
+      </LayoutProvider>
     </BrowserRouter>
   );
 }

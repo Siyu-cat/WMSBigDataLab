@@ -1,53 +1,59 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import FloatingBlocks from '../../features/background/FloatingBlocks';
-import { getCategoryTree } from '../../features/home/homeService';
-import type { CategoryTreeNode, EntrySimple } from '../../features/home/types';
+import { useLayout } from '../../contexts/LayoutContext';
 import CategoryTree from '../../features/home/components/CategoryTree';
 import CollapseAllButton from '../../features/home/components/CollapseAllButton';
 import EntryDetail from '../../features/entry/components/EntryDetail';
 import SearchBar from '../../features/search/components/SearchBar';
 import SearchResultList from '../../features/search/components/SearchResultList';
 import { searchEntries } from '../../features/search/searchService';
+import { spacing } from '../../features/home/components/spacingConfig';
 import type { SearchResult } from '../../features/search/searchService';
+import type { EntrySimple } from '../../features/home/types';
+import BackArrow from '../icons/BackArrow';
 
 const DesktopLayout: React.FC = () => {
-  const [categories, setCategories] = useState<CategoryTreeNode[]>([]);
-  const [expandedIds, setExpandedIds] = useState<string[]>(['1', '1-1']);
-  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
-  const [rightTitle, setRightTitle] = useState('');
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const {
+    categories,
+    expandedIds,
+    selectedSlug,
+    rightTitle,
+    loading,
+    toggleCategory,
+    collapseAll,
+    setSelectedSlug,
+    setRightTitle,
+    handleEntryClick,
+    expandToEntry,
+  } = useLayout();
+
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [currentKeyword, setCurrentKeyword] = useState('');
+  const [viewFromSearch, setViewFromSearch] = useState(false);
 
   useEffect(() => {
-    getCategoryTree()
-      .then(data => {
-        setCategories(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+    if (location.pathname === '/search') {
+      navigate('/', { replace: true });
+    } else {
+      const match = location.pathname.match(/^\/entry\/([^/]+)/);
+      if (match) {
+        setSelectedSlug(match[1]);
+        const state = location.state as any;
+        if (state?.categoryName) {
+          setRightTitle(state.categoryName);
+        }
+      }
+    }
   }, []);
 
-  const toggleCategory = useCallback((id: string) => {
-    setExpandedIds(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  }, []);
-
-  const collapseAll = useCallback(() => {
-    setExpandedIds([]);
-  }, []);
-
-  const handleEntryClick = useCallback((entry: EntrySimple, categoryName: string) => {
-    setSelectedEntryId(String(entry.id));
-    setRightTitle(categoryName);
-    setSearchResults([]);
-    setCurrentKeyword('');
-    setIsSearching(false);
-  }, []);
+  const handleEntryClickDesktop = useCallback((entry: EntrySimple, categoryName: string) => {
+    handleEntryClick(entry, categoryName);
+    navigate(`/entry/${entry.slug}`, { replace: true });
+  }, [handleEntryClick, navigate]);
 
   const handleSearch = useCallback(async (keyword: string) => {
     if (!keyword.trim()) {
@@ -56,6 +62,7 @@ const DesktopLayout: React.FC = () => {
       setIsSearching(false);
       return;
     }
+    setSelectedSlug(null);
     setCurrentKeyword(keyword);
     setIsSearching(true);
     try {
@@ -66,15 +73,31 @@ const DesktopLayout: React.FC = () => {
     } finally {
       setIsSearching(false);
     }
-  }, []);
+  }, [setSelectedSlug]);
 
-  const handleSearchResultClick = useCallback((entry: SearchResult) => {
-    setSelectedEntryId(String(entry.id));
-    setRightTitle(entry.name);
+  const collapseAllWithSearch = useCallback(() => {
+    collapseAll();
     setSearchResults([]);
     setCurrentKeyword('');
     setIsSearching(false);
-  }, []);
+    setViewFromSearch(false);
+    navigate('/', { replace: true });
+  }, [collapseAll, navigate]);
+
+  const handleSearchResultClick = useCallback((entry: SearchResult) => {
+    expandToEntry(entry.slug);
+    setSelectedSlug(entry.slug);
+    setRightTitle(entry.categoryPath?.split('-').pop() || entry.title);
+    setIsSearching(false);
+    setViewFromSearch(true);
+    navigate(`/entry/${entry.slug}`, { replace: true });
+  }, [navigate, setSelectedSlug, expandToEntry]);
+
+  const handleBackToSearch = useCallback(() => {
+    setSelectedSlug(null);
+    setViewFromSearch(false);
+    navigate('/', { replace: true });
+  }, [navigate, setSelectedSlug]);
 
   return (
     <div style={{ position: 'relative', zIndex: 1 }}>
@@ -99,39 +122,28 @@ const DesktopLayout: React.FC = () => {
             <h1 style={{
               color: '#fff',
               fontSize: '20px',
-              fontWeight: 500,
+              fontWeight: 350,
               margin: 0,
             }}>大数据中心</h1>
-            <div
-              onClick={() => window.open('/admin/login', '_blank')}
-              style={{
-                marginTop: '8px',
-                color: 'rgba(255,255,255,0.5)',
-                fontSize: '12px',
-                cursor: 'pointer',
-              }}
-            >
-              管理员入口
-            </div>
           </div>
 
           <div style={{
             flex: 1,
             overflowY: 'auto',
-            padding: '16px',
+            padding: `${spacing.titleToCategoryGap}px 25px`,
           }}>
             {!loading && (
               <CategoryTree
                 categories={categories}
                 expandedIds={expandedIds}
-                selectedEntryId={selectedEntryId}
+                selectedSlug={selectedSlug}
                 onToggleCategory={toggleCategory}
-                onEntryClick={handleEntryClick}
+                onEntryClick={handleEntryClickDesktop}
               />
             )}
           </div>
 
-          <CollapseAllButton isMobile={false} onClick={collapseAll} />
+          <CollapseAllButton isMobile={false} onClick={collapseAllWithSearch} />
         </div>
 
         <div style={{
@@ -146,10 +158,26 @@ const DesktopLayout: React.FC = () => {
             borderBottom: '1px solid rgba(255,255,255,0.3)',
             position: 'relative',
           }}>
+            {viewFromSearch && selectedSlug && (
+              <div
+                onClick={handleBackToSearch}
+                style={{
+                  position: 'absolute',
+                  left: '20px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  marginTop: '4px',
+                }}
+              >
+                <BackArrow color="#fff" size={34} />
+              </div>
+            )}
             <h2 style={{
               color: '#fff',
               fontSize: '20px',
-              fontWeight: 500,
+              fontWeight: 350,
               margin: 0,
             }}>{rightTitle || '大数据中心'}</h2>
 
@@ -179,13 +207,13 @@ const DesktopLayout: React.FC = () => {
               }}>
                 搜索中...
               </div>
+            ) : selectedSlug ? (
+              <EntryDetail slug={selectedSlug} />
             ) : searchResults.length > 0 ? (
               <SearchResultList
                 results={searchResults}
                 onSelect={handleSearchResultClick}
               />
-            ) : selectedEntryId ? (
-              <EntryDetail entryId={selectedEntryId} />
             ) : (
               <div style={{
                 display: 'flex',
@@ -194,7 +222,7 @@ const DesktopLayout: React.FC = () => {
                 height: '100%',
                 color: 'rgba(255,255,255,0.6)',
                 fontSize: '48px',
-                fontWeight: 300,
+              fontWeight: 350,
               }}>
                 <span>大数据检索中</span>
               </div>

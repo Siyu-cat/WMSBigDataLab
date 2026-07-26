@@ -40,7 +40,7 @@ const createRequest = (): AxiosInstance => {
     (error) => {
       if (error.response) {
         const { status } = error.response;
-        if (status === 401) {
+        if (status === 401 && getToken()) {
           clearToken();
           window.location.href = '/admin/login';
         }

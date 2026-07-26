@@ -35,7 +35,7 @@ const SearchResultList: React.FC<SearchResultListProps> = ({ results, onSelect, 
         color: '#fff',
         fontSize: isMobile ? '16px' : '18px',
         marginBottom: isMobile ? '16px' : '20px',
-        fontWeight: 500,
+        fontWeight: 350,
       }}>
         搜索结果 ({results.length})
       </div>
@@ -56,7 +56,6 @@ const SearchResultList: React.FC<SearchResultListProps> = ({ results, onSelect, 
               cursor: 'pointer',
               transition: 'background 0.2s',
               color: '#fff',
-              fontSize: isMobile ? '14px' : '16px',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
@@ -65,7 +64,27 @@ const SearchResultList: React.FC<SearchResultListProps> = ({ results, onSelect, 
               e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
             }}
           >
-            {entry.name}
+            <div style={{
+              fontSize: isMobile ? '14px' : '16px',
+              fontWeight: 500,
+              marginBottom: '4px',
+            }}>
+              {entry.title}
+            </div>
+            <div style={{
+              fontSize: isMobile ? '12px' : '14px',
+              color: 'rgba(255,255,255,0.7)',
+              marginBottom: '4px',
+              lineHeight: 1.4,
+            }}>
+              {entry.contentSnippet}
+            </div>
+            <div style={{
+              fontSize: isMobile ? '11px' : '12px',
+              color: 'rgba(255,255,255,0.5)',
+            }}>
+              {entry.categoryPath}
+            </div>
           </div>
         ))}
       </div>

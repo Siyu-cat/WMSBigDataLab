@@ -3,12 +3,14 @@ import SearchIcon from '../../../components/icons/SearchIcon';
 
 interface SearchBarProps {
   isMobile?: boolean;
+  autoExpand?: boolean;
+  defaultValue?: string;
   onSearch: (keyword: string) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ isMobile = false, onSearch }) => {
-  const [value, setValue] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
+const SearchBar: React.FC<SearchBarProps> = ({ isMobile = false, autoExpand = false, defaultValue = '', onSearch }) => {
+  const [value, setValue] = useState(defaultValue);
+  const [isExpanded, setIsExpanded] = useState(autoExpand);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -17,11 +19,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ isMobile = false, onSearch }) => 
       clearTimeout(debounceRef.current);
     }
 
-    if (value.trim()) {
-      debounceRef.current = setTimeout(() => {
-        onSearch(value.trim());
-      }, 300);
-    }
+    debounceRef.current = setTimeout(() => {
+      onSearch(value.trim());
+    }, 300);
 
     return () => {
       if (debounceRef.current) {
@@ -62,7 +62,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ isMobile = false, onSearch }) => 
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onBlur={() => {
-                if (!value) setIsExpanded(false);
+                if (!autoExpand && !value) setIsExpanded(false);
               }}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="搜索词条..."
@@ -102,7 +102,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ isMobile = false, onSearch }) => 
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        onBlur={handleSearch}
         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         placeholder="搜索词条..."
         style={{
@@ -112,6 +111,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ isMobile = false, onSearch }) => 
           outline: 'none',
           fontSize: '14px',
           color: '#333',
+          minWidth: 0,
         }}
       />
       <div onClick={handleSearch} style={{ cursor: 'pointer' }}>

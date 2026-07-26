@@ -1,70 +1,68 @@
 import React from 'react';
+import { spacing } from './spacingConfig';
 
 interface CategoryButtonProps {
   name: string;
   level: number;
   isExpanded: boolean;
   onClick: () => void;
+  gap: number;
+  /** 文字垂直偏移量（像素），正数往下，负数往上。不传则使用默认值 -1.5 */
+  textOffsetY?: number;
+  /** 一级分类箭头展开后偏移量，{x: 水平(正数往右)，y: 垂直(正数往下)} */
+  level1ArrowOffset?: { x: number; y: number };
+  /** 二级分类箭头展开后偏移量，{x: 水平(正数往右)，y: 垂直(正数往下)} */
+  level2ArrowOffset?: { x: number; y: number };
 }
 
-const CategoryButton: React.FC<CategoryButtonProps> = ({ name, level, isExpanded, onClick }) => {
+const CategoryButton: React.FC<CategoryButtonProps> = ({ name, level, isExpanded, onClick, gap, textOffsetY = -1.5, level1ArrowOffset = { x: 0, y: 0 }, level2ArrowOffset = { x: 0, y: 0 } }) => {
   const bg = level === 0
-    ? 'rgba(60,60,60,0.7)'
-    : 'rgba(160,160,160,0.4)';
+    ? 'rgba(76,77,82,1)'
+    : 'rgba(76,77,82,0.55)';
 
-  const bgHover = level === 0
-    ? 'rgba(60,60,60,0.85)'
-    : 'rgba(160,160,160,0.55)';
-
-  const indent = level === 0 ? 0 : 24;
+  const indent = level === 0 ? 0 : 32;
+  const marginBottom = `${gap}px`;
 
   return (
-    <div style={{ paddingLeft: `${indent}px`, marginBottom: '8px' }}>
+    <div style={{ paddingLeft: `${indent}px`, marginBottom }}>
       <div
         onClick={onClick}
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '10px',
-          padding: '10px 22px',
+          gap: level === 0 ? '2px' : '6px',
+          padding: level === 0 ? '10px 23px 10px 17px' : '10px 23px 11px 22px',
+          width: level === 0 ? '186px' : '240px',
+          height: level === 0 ? '47.5px' : '48px',
+          minWidth: level === 0 ? '186px' : '240px',
           cursor: 'pointer',
           color: '#fff',
-          fontSize: '16px',
-          fontWeight: 400,
+          fontSize: '18.5px',
+          fontWeight: 350,
           borderRadius: '24px',
-          background: isExpanded ? bg : 'transparent',
-          transition: 'background 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.background = isExpanded ? bgHover : 'rgba(255,255,255,0.1)';
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.background = isExpanded ? bg : 'transparent';
+          background: bg,
+          boxShadow: level === 0 ? spacing.level1Shadow : spacing.level2Shadow,
         }}
       >
         {level === 0 ? (
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+          <svg width="37" height="37" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, transform: isExpanded ? `translate(${level1ArrowOffset.x}px, ${level1ArrowOffset.y}px) rotate(90deg)` : 'rotate(0deg)' }}>
             <path
-              d="M3 5.5C3 4.67 3.67 4 4.5 4H11.5C12.33 4 13 4.67 13 5.5V5.5C13 5.78 12.78 6 12.5 6H3.5C3.22 6 3 5.78 3 5.5V5.5Z"
-              fill="white"
-            />
-            <path
-              d="M4.5 6H11.5L8.5 10C8.22 10.38 7.78 10.38 7.5 10L4.5 6Z"
+              d="M5.5 2.8 L12 7.2 Q13.18 8 12 8.8 L5.5 13.2 Q4 14.22 4 11.5 L4 4.5 Q4 1.78 5.5 2.8Z"
               fill="white"
             />
           </svg>
         ) : (
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+          <svg width="24" height="24" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, transform: isExpanded ? `translate(${level2ArrowOffset.x}px, ${level2ArrowOffset.y}px) rotate(90deg)` : 'rotate(0deg)' }}>
             <path
-              d="M3.5 8.5L6.5 11.5L12.5 4.5"
+              d="M4 3L9 8L4 13"
               stroke="white"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
         )}
-        <span>{name}</span>
+        <span style={{ transform: `translateY(${textOffsetY}px)` }}>{name}</span>
       </div>
     </div>
   );

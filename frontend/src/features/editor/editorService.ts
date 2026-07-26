@@ -45,7 +45,12 @@ export async function getEntry(id: number): Promise<EntryData> {
       .flatMap(c => c.children || [])
       .flatMap(c => c.entries || [])
       .find(e => String(e.id) === String(id));
-    const name = entry && 'title' in entry ? entry.title : ((entry as MockEntry)?.name || '模拟词条');
+    let name: string;
+    if (entry && 'title' in entry) {
+      name = entry.title;
+    } else {
+      name = (entry as MockEntry)?.name ?? '模拟词条';
+    }
     return {
       id,
       title: name,

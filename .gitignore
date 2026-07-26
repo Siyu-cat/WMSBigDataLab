@@ -21,6 +21,7 @@ backend/uploads/
 
 # Environment (keep .env but not secrets)
 *.local
+application-local.yml
 
 # Compiled class files
 *.class

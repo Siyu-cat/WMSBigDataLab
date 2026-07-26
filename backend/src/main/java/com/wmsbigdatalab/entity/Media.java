@@ -23,5 +23,6 @@ public class Media {
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
+    @TableLogic(value = "null", delval = "now()")
     private LocalDateTime deletedAt;
 }

@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
                 .orderByAsc(Category::getSortOrder));
 
         LambdaQueryWrapper<Entry> entryWrapper = new LambdaQueryWrapper<>();
-        entryWrapper.orderByDesc(Entry::getCreatedAt);
+        entryWrapper.orderByAsc(Entry::getSlug);
         List<Entry> allEntries = entryService.list(entryWrapper);
 
         return buildTree(allCategories, null, allEntries);
@@ -46,9 +47,11 @@ public class CategoryService extends ServiceImpl<CategoryMapper, Category> {
                         .filter(e -> category.getId().equals(e.getCategoryId()))
                         .collect(Collectors.toList());
                 List<EntrySimple> simpleEntries = categoryEntries.stream()
+                        .sorted(Comparator.comparing(Entry::getSlug, Comparator.nullsLast(Comparator.naturalOrder())))
                         .map(e -> {
                             EntrySimple s = new EntrySimple();
                             s.setId(e.getId());
+                            s.setSlug(e.getSlug());
                             s.setTitle(e.getTitle());
                             s.setSummary(e.getSummary());
                             s.setViewCount(e.getViewCount());

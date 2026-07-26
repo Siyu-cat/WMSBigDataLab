@@ -13,6 +13,8 @@ public class Entry {
 
     private String title;
 
+    private String slug;
+
     private String summary;
 
     private String content;
@@ -30,5 +32,6 @@ public class Entry {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
+    @TableLogic(value = "null", delval = "now()")
     private LocalDateTime deletedAt;
 }

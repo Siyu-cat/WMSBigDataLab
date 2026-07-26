@@ -29,5 +29,6 @@ public class Category {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
+    @TableLogic(value = "null", delval = "now()")
     private LocalDateTime deletedAt;
 }
