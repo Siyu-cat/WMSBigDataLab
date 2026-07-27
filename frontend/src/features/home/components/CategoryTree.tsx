@@ -66,8 +66,8 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
           onClick={() => onToggleCategory(category.id)}
           gap={gap}
           textOffsetY={level === 0 ? -1.5 : 1.5}
-          level1ArrowOffset={{ x: -2, y: 2 }}
-          level2ArrowOffset={{ x: -2, y: 2 }}
+          level1ArrowOffset={{ x: -2, y: 1 }}
+          level2ArrowOffset={{ x: -2, y: 3 }}
         />
 
         {isExpanded && (

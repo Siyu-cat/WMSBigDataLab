@@ -24,13 +24,11 @@ const EntryCard: React.FC<EntryCardProps> = ({ name, isSelected, paddingLeft, on
   return (
     <div
       ref={ref}
-      onClick={onClick}
       style={{
         display: 'flex',
         alignItems: 'center',
         paddingLeft: `${paddingLeft}px`,
         marginBottom: `${gap}px`,
-        cursor: 'pointer',
       }}
     >
       <div style={{
@@ -55,6 +53,7 @@ const EntryCard: React.FC<EntryCardProps> = ({ name, isSelected, paddingLeft, on
         }} />
       </div>
       <div
+        onClick={onClick}
         style={{
           padding: isMobile ? '9px 16px' : '9px 28px',
           width: isMobile ? '100%' : '365px',
@@ -63,6 +62,7 @@ const EntryCard: React.FC<EntryCardProps> = ({ name, isSelected, paddingLeft, on
           background: isSelected ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,1)',
           borderRadius: '24px',
           boxShadow: spacing.entryShadow,
+          cursor: 'pointer',
         }}
       >
         <span style={{ color: '#26272e', fontSize: isMobile ? '14px' : '19px', fontWeight: 400 }}>{name}</span>
