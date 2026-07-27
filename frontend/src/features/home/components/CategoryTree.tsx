@@ -3,6 +3,7 @@ import type { CategoryTreeNode, EntrySimple } from '../types';
 import CategoryButton from './CategoryButton';
 import EntryCard from './EntryCard';
 import { spacing } from './spacingConfig';
+import { useResponsive } from '../../../hooks/useResponsive';
 
 interface CategoryTreeProps {
   categories: CategoryTreeNode[];
@@ -29,29 +30,29 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
   onToggleCategory,
   onEntryClick,
 }) => {
+  const { scale } = useResponsive();
   const renderCategory = (category: CategoryTreeNode, level: number, prevType?: 'level1' | 'level2' | 'entry') => {
     const isExpanded = expandedIds.includes(category.id);
-    const entryPaddingLeft = (level + 1) * 26 + 9;
 
     // 计算当前元素的 marginTop
     let marginTop = 0;
     if (level === 0 && prevType) {
       if (prevType === 'level2') {
-        marginTop = spacing.level2ToLevel1Gap - spacing.level2Gap; // 40 - 20 = 20px
+        marginTop = (spacing.level2ToLevel1Gap - spacing.level2Gap) * scale;
       } else if (prevType === 'entry') {
-        marginTop = spacing.entryToLevel1Gap - spacing.entryGap; // 50 - 10 = 40px
+        marginTop = (spacing.entryToLevel1Gap - spacing.entryGap) * scale;
       }
     } else if (level === 1 && prevType === 'entry') {
-      marginTop = spacing.entryToLevel2Gap - spacing.entryGap; // 30 - 10 = 20px
+      marginTop = (spacing.entryToLevel2Gap - spacing.entryGap) * scale;
     }
 
     // 计算当前元素的 gap（marginBottom）
-    const gap = level === 0 ? spacing.level1Gap : spacing.level2Gap;
+    const gap = level === 0 ? spacing.level1Gap * scale : spacing.level2Gap * scale;
 
     // 子内容的 marginTop 根据父分类类型动态设置
     const childContentMarginTop = level === 0
-      ? spacing.level1ToLevel2Gap - spacing.level1Gap    // 一级分类：30 - 42 = -12px
-      : spacing.level2ToEntryGap - spacing.level2Gap;    // 二级分类：22 - 20 = 2px
+      ? (spacing.level1ToLevel2Gap - spacing.level1Gap) * scale
+      : (spacing.level2ToEntryGap - spacing.level2Gap) * scale;
 
     // 跟踪前一个子元素的类型
     let prevChildType: 'level2' | 'entry' | undefined = undefined;
@@ -86,7 +87,7 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
                 <React.Fragment key={child.id}>
                   {renderCategory(child, level + 1, childPrevType)}
                   {childIsExpanded && (
-                    <div style={{ marginTop: `${spacing.level2ToEntryGap - spacing.level2Gap}px` }}>
+                    <div style={{ marginTop: `${(spacing.level2ToEntryGap - spacing.level2Gap) * scale}px` }}>
                       {child.entries?.map(entry => {
                         const name = 'title' in entry ? (entry.title || entry.summary || '未命名') : entry.name;
                         const eid = Number(entry.id);
@@ -96,8 +97,8 @@ const CategoryTree: React.FC<CategoryTreeProps> = ({
                             id={eid}
                             name={name}
                             isSelected={selectedSlug === ('slug' in entry ? entry.slug : '')}
-                            paddingLeft={54}
-                            gap={spacing.entryGap}
+                            paddingLeft={54 * scale}
+                            gap={spacing.entryGap * scale}
                             onClick={() => onEntryClick({ id: eid, slug: 'slug' in entry ? entry.slug || '' : '', title: name } as EntrySimple, child.name)}
                           />
                         );

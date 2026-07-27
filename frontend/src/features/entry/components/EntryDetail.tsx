@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { get } from '../../../services/request';
 import LocationPin from '../../../components/icons/LocationPin';
 import BackArrow from '../../../components/icons/BackArrow';
+import { useResponsive } from '../../../hooks/useResponsive';
 
 interface EntryDetailProps {
   slug?: string;
@@ -23,6 +24,7 @@ const EntryDetail: React.FC<EntryDetailProps> = ({ slug: propSlug, onBack }) => 
   const [entry, setEntry] = useState<Entry | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { scale, isMobile } = useResponsive();
 
   const loadEntry = useCallback(async () => {
     if (!slug) return;
@@ -101,13 +103,13 @@ const EntryDetail: React.FC<EntryDetailProps> = ({ slug: propSlug, onBack }) => 
       <div style={{
         position: 'relative',
         zIndex: 2,
-        padding: '40px',
+        padding: isMobile ? `${16 * scale}px` : '40px',
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '5px',
-          marginBottom: '33px',
+          marginBottom: `${33 * scale}px`,
           marginTop: '-2px',
         }}>
           {onBack && (
@@ -115,24 +117,24 @@ const EntryDetail: React.FC<EntryDetailProps> = ({ slug: propSlug, onBack }) => 
               onClick={onBack}
               style={{
                 cursor: 'pointer',
-                padding: '4px',
+                padding: `${4 * scale}px`,
                 flexShrink: 0,
-                marginTop: '8px',
+                marginTop: `${8 * scale}px`,
               }}
             >
-              <BackArrow color="#fff" size={34} />
+              <BackArrow color="#fff" size={34 * scale} />
             </div>
           )}
           <div style={{ marginLeft: '-5.5px', marginTop: '6px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }}>
-            <LocationPin color="#fff" size={38} />
+            <LocationPin color="#fff" size={38 * scale} />
           </div>
-          <h2 style={{ fontSize: '26px', fontWeight: 350, margin: 0 }}>
+          <h2 style={{ fontSize: `${26 * scale}px`, fontWeight: 350, margin: 0 }}>
             {entry.title || '未知词条'}
           </h2>
         </div>
 
         <div style={{
-          fontSize: '18px',
+          fontSize: `${18 * scale}px`,
           fontWeight: 350,
           lineHeight: 1.75,
           color: '#fff',

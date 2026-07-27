@@ -4,11 +4,13 @@ import BackArrow from '../icons/BackArrow';
 import SearchIcon from '../icons/SearchIcon';
 import FloatingBlocks from '../../features/background/FloatingBlocks';
 import { useLayout } from '../../contexts/LayoutContext';
+import { useResponsive } from '../../hooks/useResponsive';
 
 const PhoneLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { selectedSlug, rightTitle, setSelectedSlug, expandedIds } = useLayout();
+  const { scale } = useResponsive();
 
   const isSubPage = location.pathname !== '/' && !location.pathname.startsWith('/category');
 
@@ -44,7 +46,7 @@ const PhoneLayout: React.FC = () => {
 
       {/* Header */}
       <div style={{
-        padding: '20px',
+        padding: `${20 * scale}px`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -71,19 +73,19 @@ const PhoneLayout: React.FC = () => {
             }}
             style={{
               position: 'absolute',
-              left: '16px',
+              left: `${16 * scale}px`,
               cursor: 'pointer',
-              padding: '4px',
-              marginTop: '8px',
+              padding: `${4 * scale}px`,
+              marginTop: `${8 * scale}px`,
             }}
           >
-            <BackArrow color="#fff" size={34} />
+            <BackArrow color="#fff" size={34 * scale} />
           </div>
         ) : null}
 
         <h1 style={{
           color: '#fff',
-          fontSize: '20px',
+          fontSize: `${20 * scale}px`,
           fontWeight: 350,
           margin: 0,
         }}>{getTitle()}</h1>
@@ -94,12 +96,12 @@ const PhoneLayout: React.FC = () => {
               onClick={() => navigate('/search')}
               style={{
                 position: 'absolute',
-                right: '40px',
+                right: `${40 * scale}px`,
                 cursor: 'pointer',
-                padding: '4px',
+                padding: `${4 * scale}px`,
               }}
             >
-              <SearchIcon color="#fff" size={22} />
+              <SearchIcon color="#fff" size={22 * scale} />
             </div>
           </>
         )}

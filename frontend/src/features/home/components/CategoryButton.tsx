@@ -1,5 +1,6 @@
 import React from 'react';
 import { spacing } from './spacingConfig';
+import { useResponsive } from '../../../hooks/useResponsive';
 
 interface CategoryButtonProps {
   name: string;
@@ -16,6 +17,7 @@ interface CategoryButtonProps {
 }
 
 const CategoryButton: React.FC<CategoryButtonProps> = ({ name, level, isExpanded, onClick, gap, textOffsetY = -1.5, level1ArrowOffset = { x: 0, y: 0 }, level2ArrowOffset = { x: 0, y: 0 } }) => {
+  const { scale } = useResponsive();
   const bg = level === 0
     ? 'rgba(76,77,82,1)'
     : 'rgba(76,77,82,0.55)';
@@ -30,29 +32,29 @@ const CategoryButton: React.FC<CategoryButtonProps> = ({ name, level, isExpanded
         style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: level === 0 ? '2px' : '6px',
-          padding: level === 0 ? '10px 23px 10px 17px' : '10px 23px 11px 22px',
-          width: level === 0 ? '186px' : '240px',
-          height: level === 0 ? '47.5px' : '48px',
-          minWidth: level === 0 ? '186px' : '240px',
+          gap: level === 0 ? `${2 * scale}px` : `${6 * scale}px`,
+          padding: level === 0 ? `${10 * scale}px ${23 * scale}px ${10 * scale}px ${17 * scale}px` : `${10 * scale}px ${23 * scale}px ${11 * scale}px ${22 * scale}px`,
+          width: level === 0 ? `${186 * scale}px` : `${240 * scale}px`,
+          height: level === 0 ? `${47.5 * scale}px` : `${48 * scale}px`,
+          minWidth: level === 0 ? `${186 * scale}px` : `${240 * scale}px`,
           cursor: 'pointer',
           color: '#fff',
-          fontSize: '18.5px',
+          fontSize: `${18.5 * scale}px`,
           fontWeight: 350,
-          borderRadius: '24px',
+          borderRadius: `${24 * scale}px`,
           background: bg,
           boxShadow: level === 0 ? spacing.level1Shadow : spacing.level2Shadow,
         }}
       >
         {level === 0 ? (
-          <svg width="37" height="37" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, transform: isExpanded ? `translate(${level1ArrowOffset.x}px, ${level1ArrowOffset.y}px) rotate(90deg)` : 'rotate(0deg)' }}>
+          <svg width={`${37 * scale}px`} height={`${37 * scale}px`} viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, transform: isExpanded ? `translate(${level1ArrowOffset.x}px, ${level1ArrowOffset.y}px) rotate(90deg)` : 'rotate(0deg)' }}>
             <path
               d="M5.5 2.8 L12 7.2 Q13.18 8 12 8.8 L5.5 13.2 Q4 14.22 4 11.5 L4 4.5 Q4 1.78 5.5 2.8Z"
               fill="white"
             />
           </svg>
         ) : (
-          <svg width="24" height="24" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, transform: isExpanded ? `translate(${level2ArrowOffset.x}px, ${level2ArrowOffset.y}px) rotate(90deg)` : 'rotate(0deg)' }}>
+          <svg width={`${24 * scale}px`} height={`${24 * scale}px`} viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, transform: isExpanded ? `translate(${level2ArrowOffset.x}px, ${level2ArrowOffset.y}px) rotate(90deg)` : 'rotate(0deg)' }}>
             <path
               d="M4 3L9 8L4 13"
               stroke="white"
