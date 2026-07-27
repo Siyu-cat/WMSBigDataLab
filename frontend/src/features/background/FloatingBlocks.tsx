@@ -15,7 +15,7 @@ interface Block {
   targetHeight: number;
 }
 
-const getCanvasWidth = () => window.innerWidth <= 768 ? 768 : window.innerWidth;
+const getCanvasWidth = () => window.innerWidth;
 
 const getGroupXRange = (group: number, canvasWidth: number): { min: number; max: number } => {
   const sectionWidth = canvasWidth / 3;
@@ -37,6 +37,7 @@ const FloatingBlocks: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const blocksRef = useRef<Block[]>([]);
   const animationRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(0);
 
   const createBlock = (group: number): Block => {
     const vh = window.innerHeight;
@@ -77,7 +78,10 @@ const FloatingBlocks: React.FC = () => {
     blocksRef.current = blocks;
   };
 
-  const animate = () => {
+  const animate = (timestamp: number) => {
+    const delta = lastTimeRef.current === 0 ? 16 : Math.min(timestamp - lastTimeRef.current, 50);
+    lastTimeRef.current = timestamp;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -93,14 +97,14 @@ const FloatingBlocks: React.FC = () => {
     const vh = window.innerHeight;
 
     blocksRef.current.forEach((block) => {
-      block.phaseTime += 16;
+      block.phaseTime += delta;
 
       if (block.phaseTime < block.delay) return;
 
       switch (block.phase) {
         case 'line':
           const maxOpacity = block.group === 2 ? 0.2 : 0.1;
-          block.opacity = Math.min(block.opacity + 0.02, maxOpacity);
+          block.opacity = Math.min(block.opacity + 0.02 * (delta / 16), maxOpacity);
           if (block.phaseTime > 200) {
             block.phase = 'expand';
             block.phaseTime = 0;
@@ -109,7 +113,7 @@ const FloatingBlocks: React.FC = () => {
 
         case 'expand':
           block.width = block.targetWidth;
-          const expandDelta = 2;
+          const expandDelta = 2 * (delta / 16);
           block.height = Math.min(block.height + expandDelta, block.targetHeight);
           block.y -= expandDelta / 2;
           if (block.height >= block.targetHeight) {
@@ -119,14 +123,14 @@ const FloatingBlocks: React.FC = () => {
           break;
 
         case 'pause1':
-          if (block.phaseTime > 2000) {
+          if (block.phaseTime > 500) {
             block.phase = 'float';
             block.phaseTime = 0;
           }
           break;
 
         case 'float':
-          block.y -= block.speed;
+          block.y -= block.speed * (delta / 16);
           if (block.phaseTime > 500) {
             block.phase = 'pause2';
             block.phaseTime = 0;
@@ -134,7 +138,7 @@ const FloatingBlocks: React.FC = () => {
           break;
 
         case 'pause2':
-          if (block.phaseTime > 2000) {
+          if (block.phaseTime > 500) {
             block.phase = 'shrink';
             block.phaseTime = 0;
           }
@@ -142,11 +146,11 @@ const FloatingBlocks: React.FC = () => {
 
         case 'shrink':
           block.width = block.targetWidth;
-          const shrinkDelta = 2;
+          const shrinkDelta = 2 * (delta / 16);
           block.height = Math.max(block.height - shrinkDelta, 2);
           block.y += shrinkDelta / 2;
           if (block.height <= 4) {
-            block.opacity = Math.max(block.opacity - 0.02, 0);
+            block.opacity = Math.max(block.opacity - 0.02 * (delta / 16), 0);
           }
           if (block.height <= 2) {
             block.opacity = 0;
@@ -200,7 +204,7 @@ const FloatingBlocks: React.FC = () => {
 
   useEffect(() => {
     initBlocks();
-    animate();
+    animationRef.current = requestAnimationFrame(animate);
 
     const handleResize = () => {
       const canvas = canvasRef.current;
@@ -218,17 +222,14 @@ const FloatingBlocks: React.FC = () => {
     };
   }, []);
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-
   return (
     <canvas
       ref={canvasRef}
       style={{
         position: 'fixed',
         top: 0,
-        left: isMobile ? '50%' : 0,
-        transform: isMobile ? 'translateX(-50%)' : 'none',
-        width: isMobile ? '768px' : '100%',
+        left: 0,
+        width: '100%',
         height: '100%',
         pointerEvents: 'none',
         zIndex: 0,
