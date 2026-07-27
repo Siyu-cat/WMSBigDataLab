@@ -103,7 +103,7 @@ const EntryDetail: React.FC<EntryDetailProps> = ({ slug: propSlug, onBack }) => 
       <div style={{
         position: 'relative',
         zIndex: 2,
-        padding: isMobile ? `${16 * scale}px` : '40px',
+        padding: '40px',
       }}>
         <div style={{
           display: 'flex',

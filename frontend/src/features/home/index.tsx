@@ -4,9 +4,11 @@ import { useLayout } from '../../contexts/LayoutContext';
 import CategoryTree from './components/CategoryTree';
 import CollapseAllButton from './components/CollapseAllButton';
 import { spacing } from './components/spacingConfig';
+import { useResponsive } from '../../hooks/useResponsive';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { isMobile } = useResponsive();
   const {
     categories,
     expandedIds,
@@ -33,8 +35,8 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: `${spacing.titleToCategoryGap}px 25px` }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', paddingBottom: isMobile ? '60px' : '0', boxSizing: 'border-box' as const }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? `${spacing.titleToCategoryGap}px 15px ${spacing.titleToCategoryGap}px 20px` : `${spacing.titleToCategoryGap}px 25px` }}>
         <CategoryTree
           categories={categories}
           expandedIds={expandedIds}
@@ -43,7 +45,7 @@ const Home: React.FC = () => {
           onEntryClick={handleEntryClick}
         />
       </div>
-      <CollapseAllButton isMobile={true} onClick={collapseAll} />
+      <CollapseAllButton isMobile={isMobile} onClick={collapseAll} />
     </div>
   );
 };
