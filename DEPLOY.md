@@ -101,7 +101,7 @@ sudo docker compose up -d              # 滚动替换
 - SSH 密钥：私钥存 GitHub Secrets `SSH_PRIVATE_KEY`；公钥在服务器
   `~/.ssh/authorized_keys`，带 `restrict,command=` 限制——该密钥**只能**运行 deploy.sh，
   不能开 shell、不能转发端口，即使泄露也无法被用于其他操作
-- 主机指纹（ECDSA/RSA/ED25519 三把全量）已固定写入 deploy.yml，防止中间人；
+- 主机指纹（ECDSA，实测为 Go SSH 协商选中的密钥；easyssh 仅支持单值）已固定写入 deploy.yml，防止中间人；
   若重装服务器导致 sshd 主机密钥变化，需同步更新工作流里的 fingerprint
 - 服务器拉取用匿名方式（`git -c credential.helper=`），不依赖任何令牌
 
