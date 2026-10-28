@@ -25,6 +25,10 @@ backend/uploads/
 *.local
 application-local.yml
 
+# Deployment data (never commit)
+backup/
+uploads/
+
 # Git credentials
 .git-credentials
 

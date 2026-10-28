@@ -1,0 +1,105 @@
+name: wmsbigdatalab
+
+services:
+  # Cloudflare 隧道：服务器主动外连，对外只暴露 Cloudflare，无需开入站端口
+  # 公共主机名在 Cloudflare 后台指向 http://localhost:80（本容器走 host 网络）
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    network_mode: host
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+
+  # 前端静态文件 + /api 反向代理（镜像内含构建好的 dist 和 nginx.conf）
+  # 仅绑定本机回环，外部流量全部经 cloudflared 隧道进来
+  nginx:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    image: wmsbigdatalab-nginx
+    container_name: wms-nginx
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:80:80"
+    depends_on:
+      - backend
+
+  # Spring Boot 后端
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    image: wmsbigdatalab-backend
+    container_name: wms-backend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/wmsbigdatalab
+      SPRING_DATA_REDIS_HOST: redis
+    volumes:
+      - ../uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # PostgreSQL 18：SQL 备份来自 pg_dump 18.3，镜像必须用 18
+  db:
+    image: postgres:18-alpine
+    container_name: wms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: wmsbigdatalab
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # PG18 镜像规范：挂父目录 /var/lib/postgresql，数据自动放在版本子目录
+      - pgdata:/var/lib/postgresql
+      - ../database/wmsbigdatalab.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d wmsbigdatalab"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # Redis：会话限流等易失数据，开 AOF 防重启丢失
+  redis:
+    image: redis:7-alpine
+    container_name: wms-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+
+  # 每日 pg_dump，保留最近 7 份
+  backup:
+    image: postgres:18-alpine
+    container_name: wms-backup
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../backup:/backup
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          sleep 86400
+          ts=$$(date +%F)
+          pg_dump -h db -U postgres -d wmsbigdatalab | gzip > /backup/wmsbigdatalab_$${ts}.sql.gz
+          ls -1t /backup/*.sql.gz 2>/dev/null | tail -n +8 | xargs -r rm -f
+          echo "backup done: $${ts}"
+        done
+
+volumes:
+  pgdata:
+  redisdata:

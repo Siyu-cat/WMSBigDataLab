@@ -22,7 +22,8 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        if (path.startsWith("/api/admin/login") || path.startsWith("/api/admin/register") || path.startsWith("/api/media/uploads")) {
+        // 注册接口已从白名单移除：防止公网任意注册管理员（需要新管理员时在服务器本机调用）
+        if (path.startsWith("/api/admin/login") || path.startsWith("/api/media/uploads")) {
             return true;
         }
 
