@@ -1,0 +1,49 @@
+name: fingerprint-probe
+
+# 临时诊断：三把主机密钥指纹逐一试探 SSH，确定 Go 客户端实际协商的主机密钥
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe ED25519
+        id: ed25519
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 101.43.121.95
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          fingerprint: SHA256:g3l94Ew92woo5A1CZoLc0cqrfxW1iFvHs26FNWBDMHk
+          script: echo PROBE_ED25519_OK
+
+      - name: Probe ECDSA
+        id: ecdsa
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 101.43.121.95
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          fingerprint: SHA256:4nwW9eNY2fsi+7wVF7tV5ZRJp5kmIkvSYGPQX1aoyi0
+          script: echo PROBE_ECDSA_OK
+
+      - name: Probe RSA
+        id: rsa
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: 101.43.121.95
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          fingerprint: SHA256:wOeHtu2NI9J0y2GQ6YD4BauZb4jSOWNMg9+/hugZNGc
+          script: echo PROBE_RSA_OK
+
+      - name: Summary
+        run: |
+          echo "ED25519: ${{ steps.ed25519.outcome }}"
+          echo "ECDSA:   ${{ steps.ecdsa.outcome }}"
+          echo "RSA:     ${{ steps.rsa.outcome }}"
