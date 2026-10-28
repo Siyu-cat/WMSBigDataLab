@@ -23,8 +23,9 @@ jobs:
           host: 101.43.121.95
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          # 服务器 sshd 主机公钥指纹（固定写死，防止中间人；主机更换时需同步更新）
-          fingerprint: SHA256:g3l94Ew92woo5A1CZoLc0cqrfxW1iFvHs26FNWBDMHk
+          # 服务器 sshd 全部主机密钥指纹（ECDSA/RSA/ED25519 逗号分隔全给，
+          # 因为 Go SSH 客户端协商时不一定选 ED25519；主机更换时需同步更新）
+          fingerprint: SHA256:4nwW9eNY2fsi+7wVF7tV5ZRJp5kmIkvSYGPQX1aoyi0,SHA256:wOeHtu2NI9J0y2GQ6YD4BauZb4jSOWNMg9+/hugZNGc,SHA256:g3l94Ew92woo5A1CZoLc0cqrfxW1iFvHs26FNWBDMHk
           # 服务器端 authorized_keys 用 restrict,command= 强制执行 deploy.sh，
           # 此处 script 只是占位（实际执行内容由服务器端脚本决定）
           script: /opt/wmsbigdatalab/deploy/deploy.sh
