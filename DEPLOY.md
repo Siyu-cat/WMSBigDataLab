@@ -88,6 +88,23 @@ sudo docker compose up -d              # 滚动替换
 - **PostgreSQL 18 注意**：数据卷必须挂 `/var/lib/postgresql`（父目录），
   挂旧式的 `/var/lib/postgresql/data` 会启动失败（PG18 镜像规范变更）
 
+## 自动部署（GitHub Actions，2026-10-28 配置）
+
+```
+本地 git push → GitHub Actions → SSH(部署专用密钥) → 服务器执行 deploy/deploy.sh
+                                    → git pull + docker compose build + up -d
+                                    → curl 验证 https://wmsbigdatalab.top 返回 200
+```
+
+- 工作流：`.github/workflows/deploy.yml`（push 到 main 自动触发，并发锁防并行部署）
+- 部署脚本：`deploy/deploy.sh`（服务器端唯一入口）
+- SSH 密钥：私钥存 GitHub Secrets `SSH_PRIVATE_KEY`；公钥在服务器
+  `~/.ssh/authorized_keys`，带 `restrict,command=` 限制——该密钥**只能**运行 deploy.sh，
+  不能开 shell、不能转发端口，即使泄露也无法被用于其他操作
+- 主机指纹已固定写入 deploy.yml（`SHA256:g3l94...`），防止中间人；
+  若重装服务器导致 sshd 主机密钥变化，需同步更新工作流里的 fingerprint
+- 服务器拉取用匿名方式（`git -c credential.helper=`），不依赖任何令牌
+
 ## 与既有服务的关系
 
 本机原有 `llbot`(3080)、`astrbot`(6185/6199) 容器，独立运行，互不干扰。
