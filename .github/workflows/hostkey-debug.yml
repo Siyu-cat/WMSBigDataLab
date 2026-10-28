@@ -1,0 +1,19 @@
+name: hostkey-debug
+
+# 临时诊断：从 GitHub Runner 网络扫描服务器 SSH 主机密钥，确认公网 22 端口指向
+on:
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Scan host keys from GitHub network
+        run: |
+          echo "== TCP 22 连通性 =="
+          timeout 10 bash -c 'echo > /dev/tcp/101.43.121.95/22' && echo "22 open" || echo "22 unreachable"
+          echo "== ssh-keyscan（GitHub 网络看到的主机密钥）=="
+          timeout 20 ssh-keyscan -T 10 -p 22 -t rsa,ecdsa,ed25519 101.43.121.95 2>&1 | tee /tmp/ks.txt
+          echo "== 指纹 =="
+          ssh-keygen -lf /tmp/ks.txt || true
