@@ -5,3 +5,4 @@ backend/target
 deploy/.env
 uploads
 backup
+homepage/dist

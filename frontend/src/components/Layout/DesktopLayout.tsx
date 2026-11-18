@@ -118,7 +118,22 @@ const DesktopLayout: React.FC = () => {
             padding: '20px',
             textAlign: 'center',
             borderBottom: '1px solid rgba(255,255,255,0.3)',
+            position: 'relative',
           }}>
+            <div
+              onClick={() => { window.location.href = '/'; }}
+              title="返回主页"
+              style={{
+                position: 'absolute',
+                left: '20px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                cursor: 'pointer',
+                padding: '4px',
+              }}
+            >
+              <BackArrow color="#fff" size={34} />
+            </div>
             <h1 style={{
               color: '#fff',
               fontSize: '20px',
@@ -152,11 +167,27 @@ const DesktopLayout: React.FC = () => {
           flexDirection: 'column',
           position: 'relative',
         }}>
+          {selectedSlug && !isSearching && (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: '70%',
+                background: `url(${import.meta.env.BASE_URL}skyline.png) right bottom / cover no-repeat`,
+                zIndex: 0,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
           <div style={{
             padding: '20px',
             textAlign: 'center',
             borderBottom: '1px solid rgba(255,255,255,0.3)',
             position: 'relative',
+            zIndex: 1,
           }}>
             {viewFromSearch && selectedSlug && (
               <div
@@ -195,6 +226,7 @@ const DesktopLayout: React.FC = () => {
             flex: 1,
             overflowY: 'auto',
             position: 'relative',
+            zIndex: 1,
           }}>
             {isSearching ? (
               <div style={{
@@ -208,7 +240,7 @@ const DesktopLayout: React.FC = () => {
                 搜索中...
               </div>
             ) : selectedSlug ? (
-              <EntryDetail slug={selectedSlug} />
+              <EntryDetail slug={selectedSlug} skyline={false} />
             ) : searchResults.length > 0 ? (
               <SearchResultList
                 results={searchResults}

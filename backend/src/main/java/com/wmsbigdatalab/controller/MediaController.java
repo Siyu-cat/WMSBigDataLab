@@ -61,7 +61,8 @@ public class MediaController {
 
     @GetMapping("/uploads/**")
     public ResponseEntity<Resource> serveFile(jakarta.servlet.http.HttpServletRequest request) throws IOException {
-        String path = request.getRequestURI().replaceFirst("/api/media", "");
+        // URI 为 /api/media/uploads/xxx，去掉前缀后直接拼到 uploadPath（否则会重复 uploads 目录）
+        String path = request.getRequestURI().replaceFirst("^/api/media/uploads", "");
         String basePath = System.getProperty("user.dir");
         File file = new File(basePath + File.separator + uploadPath + path);
         if (!file.exists()) {

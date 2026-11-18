@@ -44,7 +44,7 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   useEffect(() => {
-    const match = window.location.pathname.match(/^\/entry\/([^/]+)/);
+    const match = window.location.pathname.match(/\/entry\/([^/]+)/);
     if (match) {
       setSelectedSlug(match[1]);
     }
@@ -86,6 +86,15 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setExpandedIds(prev => [...new Set([...prev, ...pathIds])]);
     }
   }, [categories]);
+
+  // 刷新/深链接进入词条页：树加载完成后，自动展开到当前词条
+  useEffect(() => {
+    if (loading) return;
+    const match = window.location.pathname.match(/\/entry\/([^/]+)/);
+    if (match) {
+      expandToEntry(match[1]);
+    }
+  }, [loading, expandToEntry]);
 
   return (
     <LayoutContext.Provider value={{

@@ -24,7 +24,7 @@ function App() {
   const { isMobile } = useResponsive();
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/bigdatalab">
       <LayoutProvider>
         <Routes>
           {isMobile ? (

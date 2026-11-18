@@ -8,6 +8,7 @@ import { useResponsive } from '../../../hooks/useResponsive';
 interface EntryDetailProps {
   slug?: string;
   onBack?: () => void;
+  skyline?: boolean;
 }
 
 interface Entry {
@@ -18,7 +19,7 @@ interface Entry {
   categoryId: number;
 }
 
-const EntryDetail: React.FC<EntryDetailProps> = ({ slug: propSlug, onBack }) => {
+const EntryDetail: React.FC<EntryDetailProps> = ({ slug: propSlug, onBack, skyline = true }) => {
   const { slug: routeSlug } = useParams<{ slug: string }>();
   const slug = propSlug || routeSlug;
   const [entry, setEntry] = useState<Entry | null>(null);
@@ -143,19 +144,21 @@ const EntryDetail: React.FC<EntryDetailProps> = ({ slug: propSlug, onBack }) => 
         </div>
       </div>
 
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '70%',
-        backgroundImage: 'url(/skyline.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center bottom',
-        backgroundRepeat: 'no-repeat',
-        zIndex: 1,
-        pointerEvents: 'none',
-      }} />
+      {skyline && (
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '70%',
+            background: `url(${import.meta.env.BASE_URL}skyline.png) right bottom / cover no-repeat`,
+            zIndex: 1,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
     </div>
   );
 };

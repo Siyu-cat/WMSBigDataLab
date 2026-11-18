@@ -5,6 +5,7 @@ node_modules/
 backend/target/
 frontend/dist/
 frontend/dist-ssr/
+homepage/dist/
 
 # Logs
 *.log

@@ -39,7 +39,7 @@ wiki:
     path: ./uploads
   jwt:
     secret: ${JWT_SECRET}
-    expire: 7200
+    expire: 604800
   rate-limit:
     tokens-per-second: 10
     bucket-size: 20

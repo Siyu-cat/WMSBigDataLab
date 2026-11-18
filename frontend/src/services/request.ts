@@ -42,7 +42,7 @@ const createRequest = (): AxiosInstance => {
         const { status } = error.response;
         if (status === 401 && getToken()) {
           clearToken();
-          window.location.href = '/admin/login';
+          window.location.href = '/bigdatalab/admin/login';
         }
       }
       return Promise.reject(error);

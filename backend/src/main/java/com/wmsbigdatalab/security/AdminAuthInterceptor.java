@@ -36,6 +36,10 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        if (path.startsWith("/api/search/all") && "GET".equals(method)) {
+            return true;
+        }
+
         if (path.matches("/api/entry/\\d+") && "GET".equals(method)) {
             return true;
         }
@@ -49,6 +53,12 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
         }
 
         if (path.startsWith("/api/version/list/") && "GET".equals(method)) {
+            return true;
+        }
+
+        // 主线章节：目录与详情公开只读（导入接口需登录）
+        if ("GET".equals(method) && (path.equals("/api/story/chapters") ||
+                path.startsWith("/api/story/chapter/"))) {
             return true;
         }
 

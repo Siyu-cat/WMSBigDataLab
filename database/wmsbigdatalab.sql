@@ -1489,3 +1489,35 @@ ALTER TABLE ONLY public.entry_version
 
 \unrestrict 8y8L5twD96a4hv3qmvC783FXXD9SiGbppNJ0fVvRrljxaym1EExQeWMdeW2dnkY
 
+
+
+--
+-- 主线章节表（阶段2：主线 docx 导入）
+--
+
+CREATE TABLE IF NOT EXISTS public.story_chapter (
+    id BIGSERIAL PRIMARY KEY,
+    slug VARCHAR(64) NOT NULL UNIQUE,
+    title VARCHAR(128) NOT NULL,
+    tag VARCHAR(64) NOT NULL DEFAULT '',
+    num VARCHAR(8) NOT NULL DEFAULT '',
+    arc VARCHAR(32) NOT NULL DEFAULT 'haiosen',
+    data TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+--
+-- 思绪 CG 图片绑定表（阶段3：思绪【xxx】CG 功能）
+--
+
+CREATE TABLE IF NOT EXISTS public.story_cg (
+    id BIGSERIAL PRIMARY KEY,
+    chapter_slug VARCHAR(64) NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    instance INT NOT NULL DEFAULT 1,
+    image_url VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP NOT NULL DEFAULT now(),
+    UNIQUE (chapter_slug, name, instance)
+);

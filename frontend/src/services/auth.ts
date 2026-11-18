@@ -46,5 +46,5 @@ export function isAdminLoggedIn(): boolean {
 
 export function logout(): void {
   clearToken();
-  window.location.href = '/admin/login';
+  window.location.href = '/bigdatalab/admin/login';
 }

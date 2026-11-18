@@ -69,7 +69,7 @@ const DashboardLayout: React.FC = () => {
             退出登录
           </div>
           <div
-            onClick={() => window.open('/', '_blank')}
+            onClick={() => window.open('/bigdatalab/', '_blank')}
             style={{
               padding: '12px 24px',
               color: 'rgba(255,255,255,0.65)',

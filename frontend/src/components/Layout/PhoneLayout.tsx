@@ -93,6 +93,19 @@ const PhoneLayout: React.FC = () => {
         {!isSubPage && (
           <>
             <div
+              onClick={() => { window.location.href = '/'; }}
+              title="返回主页"
+              style={{
+                position: 'absolute',
+                left: `${16 * scale}px`,
+                cursor: 'pointer',
+                padding: `${4 * scale}px`,
+                marginTop: `${8 * scale}px`,
+              }}
+            >
+              <BackArrow color="#fff" size={34 * scale} />
+            </div>
+            <div
               onClick={() => navigate('/search')}
               style={{
                 position: 'absolute',
