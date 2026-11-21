@@ -17,6 +17,9 @@ public class SchemaInitConfig {
 
     private static final Logger log = LoggerFactory.getLogger(SchemaInitConfig.class);
 
+    @org.springframework.beans.factory.annotation.Value("${wiki.upload.path:./uploads}")
+    private String uploadPath;
+
     /** 主线章节表（阶段2：主线 docx 导入） */
     private static final String CREATE_STORY_CHAPTER = """
             CREATE TABLE IF NOT EXISTS public.story_chapter (
@@ -60,6 +63,43 @@ public class SchemaInitConfig {
                 jdbcTemplate.execute(sql);
             }
             log.info("数据库结构初始化完成（story_chapter / story_cg，幂等）");
+            cleanStaleChunkTmp();
         };
+    }
+
+    /** 清理分片上传遗留的临时目录（超过 24 小时未完成的视为废弃） */
+    private void cleanStaleChunkTmp() {
+        try {
+            String basePath = System.getProperty("user.dir");
+            java.io.File tmpRoot = new java.io.File(basePath + java.io.File.separator + uploadPath
+                    + java.io.File.separator + ".tmp");
+            java.io.File[] dirs = tmpRoot.listFiles();
+            if (dirs == null) {
+                return;
+            }
+            long cutoff = System.currentTimeMillis() - 24L * 3600 * 1000;
+            int removed = 0;
+            for (java.io.File d : dirs) {
+                if (d.isDirectory() && d.lastModified() < cutoff) {
+                    deleteRecursively(d);
+                    removed++;
+                }
+            }
+            if (removed > 0) {
+                log.info("清理过期分片临时目录 {} 个", removed);
+            }
+        } catch (Exception e) {
+            log.warn("清理分片临时目录失败（忽略）: {}", e.getMessage());
+        }
+    }
+
+    private void deleteRecursively(java.io.File f) {
+        java.io.File[] children = f.listFiles();
+        if (children != null) {
+            for (java.io.File c : children) {
+                deleteRecursively(c);
+            }
+        }
+        f.delete();
     }
 }

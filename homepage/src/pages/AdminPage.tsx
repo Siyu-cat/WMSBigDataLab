@@ -11,7 +11,7 @@ import {
   saveStoryImport,
   getStoryChapters,
   getStoryChapter,
-  uploadStoryCg,
+  uploadStoryCgChunked,
 } from '../services/storyService';
 import type { StoryPreviewResult, StorySaveResult, StoryChapterMeta } from '../services/storyService';
 import { getUser, setUser, setToken, clearToken, getToken } from '../services/auth';
@@ -87,6 +87,7 @@ const AdminPage: React.FC = () => {
   const [cgMap, setCgMap] = useState<Record<string, string>>({});
   const [cgLoading, setCgLoading] = useState(false);
   const [cgUploading, setCgUploading] = useState<string | null>(null);
+  const [cgProgress, setCgProgress] = useState('');
   const [cgError, setCgError] = useState('');
   const [cgNotice, setCgNotice] = useState('');
 
@@ -171,10 +172,17 @@ const AdminPage: React.FC = () => {
     if (!cgChapterSlug) return;
     const mapKey = `${bindKey}#${inst}`;
     setCgUploading(mapKey);
+    setCgProgress('');
     setCgError('');
     setCgNotice('');
     try {
-      const r = await uploadStoryCg(cgChapterSlug, bindKey, file, inst);
+      const r = await uploadStoryCgChunked(
+        cgChapterSlug,
+        bindKey,
+        file,
+        inst,
+        (done, total) => setCgProgress(`${done}/${total}`),
+      );
       setCgMap((prev) => ({ ...prev, [mapKey]: r.imageUrl }));
       setCgNotice(`「${display}」图片已${cgMap[mapKey] ? '替换' : '上传'}`);
     } catch (err) {
@@ -182,6 +190,7 @@ const AdminPage: React.FC = () => {
       setCgError(err instanceof Error ? err.message : '上传失败');
     } finally {
       setCgUploading(null);
+      setCgProgress('');
     }
   };
 
@@ -1017,7 +1026,7 @@ const AdminPage: React.FC = () => {
                           cursor: uploading ? 'not-allowed' : 'pointer',
                         }}
                       >
-                        {uploading ? '上传中...' : url ? '替换图片' : '上传图片'}
+                        {uploading ? (cgProgress ? `上传中 ${cgProgress}` : '上传中...') : url ? '替换图片' : '上传图片'}
                         <input
                           type="file"
                           accept="image/jpeg,image/png,image/webp"

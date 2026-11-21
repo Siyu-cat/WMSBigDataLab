@@ -10,6 +10,7 @@ import com.wmsbigdatalab.service.StoryImportService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -180,5 +181,118 @@ public class StoryController {
         } catch (Exception e) {
             return Result.error("上传失败: " + e.getMessage());
         }
+    }
+
+    // ==================== 分片上传（免疫大流量 QoS / CF 100s 超时） ====================
+
+    private static final int MAX_CHUNK_SIZE = 512 * 1024;
+    private static final int MAX_CHUNKS = 200;
+    private static final java.util.regex.Pattern UPLOAD_ID_PATTERN =
+            java.util.regex.Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
+
+    @org.springframework.beans.factory.annotation.Value("${wiki.upload.path:./uploads}")
+    private String uploadPath;
+
+    private File chunkDir(String uploadId) {
+        String basePath = System.getProperty("user.dir");
+        return new File(basePath + File.separator + uploadPath + File.separator + ".tmp" + File.separator + uploadId);
+    }
+
+    private String validateUploadId(String uploadId) {
+        if (uploadId == null || !UPLOAD_ID_PATTERN.matcher(uploadId).matches()) {
+            throw new IllegalArgumentException("uploadId 格式非法");
+        }
+        return uploadId;
+    }
+
+    /** 接收单个分片（幂等：同片重复上传直接覆盖，供重试/断点使用） */
+    @PostMapping("/cg/chunk")
+    public Result<?> uploadCgChunk(
+            @RequestParam("uploadId") String uploadId,
+            @RequestParam("chunkIndex") int chunkIndex,
+            @RequestParam("totalChunks") int totalChunks,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            validateUploadId(uploadId);
+            if (totalChunks < 1 || totalChunks > MAX_CHUNKS) {
+                return Result.error("分片数量超出限制");
+            }
+            if (chunkIndex < 0 || chunkIndex >= totalChunks) {
+                return Result.error("分片序号非法");
+            }
+            if (file == null || file.isEmpty()) {
+                return Result.error("分片内容为空");
+            }
+            if (file.getSize() > MAX_CHUNK_SIZE) {
+                return Result.error("单片不能超过 512KB");
+            }
+            File dir = chunkDir(uploadId);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            File dest = new File(dir, chunkIndex + ".part").getAbsoluteFile();
+            file.transferTo(dest);
+            return Result.success();
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("分片保存失败: " + e.getMessage());
+        }
+    }
+
+    /** 合并全部分片并完成绑定（需登录），成功后清理临时分片 */
+    @PostMapping("/cg/chunk-complete")
+    public Result<Map<String, String>> completeCgChunk(
+            @RequestParam("uploadId") String uploadId,
+            @RequestParam("chapterSlug") String chapterSlug,
+            @RequestParam("name") String name,
+            @RequestParam(value = "instance", required = false, defaultValue = "1") int instance,
+            @RequestParam("originalName") String originalName,
+            @RequestParam("totalChunks") int totalChunks) {
+        File dir = null;
+        try {
+            validateUploadId(uploadId);
+            if (totalChunks < 1 || totalChunks > MAX_CHUNKS) {
+                return Result.error("分片数量超出限制");
+            }
+            dir = chunkDir(uploadId);
+            for (int i = 0; i < totalChunks; i++) {
+                if (!new File(dir, i + ".part").exists()) {
+                    return Result.error("分片缺失（" + i + "/" + totalChunks + "），请重新上传");
+                }
+            }
+
+            File merged = new File(dir, "merged").getAbsoluteFile();
+            try (var out = new java.io.BufferedOutputStream(java.nio.file.Files.newOutputStream(merged.toPath()))) {
+                for (int i = 0; i < totalChunks; i++) {
+                    java.nio.file.Files.copy(new File(dir, i + ".part").toPath(), out);
+                }
+            }
+
+            String url = storyCgService.uploadFromDisk(chapterSlug, name, instance, merged, originalName);
+            Map<String, String> out = new LinkedHashMap<>();
+            out.put("name", name);
+            out.put("imageUrl", url);
+            return Result.success(out);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("合并失败: " + e.getMessage());
+        } finally {
+            // 成功后 dir 里的文件已被 move 走，这里兜底清理整个临时目录
+            if (dir != null && dir.exists()) {
+                deleteRecursively(dir);
+            }
+        }
+    }
+
+    private void deleteRecursively(File f) {
+        File[] children = f.listFiles();
+        if (children != null) {
+            for (File c : children) {
+                deleteRecursively(c);
+            }
+        }
+        f.delete();
     }
 }

@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +25,20 @@ public class MediaService extends ServiceImpl<MediaMapper, Media> {
 
     public Media uploadFile(MultipartFile file) throws IOException {
         String originalName = file.getOriginalFilename();
+        // 先落到临时文件，再走与分片合并相同的公共路径
+        File tmp = File.createTempFile("upload-", ".part");
+        try {
+            file.transferTo(tmp);
+            return uploadFromDisk(tmp, originalName, file.getSize());
+        } finally {
+            if (tmp.exists()) {
+                tmp.delete();
+            }
+        }
+    }
+
+    /** 从已落盘文件入库（分片合并/单片上传共用），src 会被移动到目标位置 */
+    public Media uploadFromDisk(File src, String originalName, long size) throws IOException {
         String extension = FileUtil.extName(originalName);
         String filename = UUID.randomUUID().toString() + "." + extension;
 
@@ -35,13 +51,13 @@ public class MediaService extends ServiceImpl<MediaMapper, Media> {
         }
 
         File dest = new File(dir, filename);
-        file.transferTo(dest);
+        Files.move(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         Media media = new Media();
         media.setFilename(filename);
         media.setOriginalName(originalName);
         media.setFileType(getFileType(extension));
-        media.setFileSize(file.getSize());
+        media.setFileSize(size);
         media.setFilePath(datePath + "/" + filename);
         save(media);
 

@@ -6,6 +6,7 @@ import com.wmsbigdatalab.mapper.StoryCgMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,31 +34,41 @@ public class StoryCgService {
 
     /** 上传/替换图片，按 (slug, name, instance) upsert，返回图片直链 */
     public String upload(String chapterSlug, String name, int instance, MultipartFile file) throws IOException {
-        if (chapterSlug == null || chapterSlug.isBlank()) {
-            throw new IllegalArgumentException("章节标识不能为空");
-        }
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("思绪名称不能为空");
-        }
-        if (instance < 1) {
-            throw new IllegalArgumentException("实例序号必须大于 0");
-        }
+        validateBinding(chapterSlug, name, instance);
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("请选择图片");
         }
-        if (file.getSize() > MAX_SIZE) {
+        String original = file.getOriginalFilename();
+        File tmp = File.createTempFile("cg-upload-", ".part");
+        try {
+            file.transferTo(tmp);
+            return uploadFromDisk(chapterSlug, name, instance, tmp, original);
+        } finally {
+            if (tmp.exists()) {
+                tmp.delete();
+            }
+        }
+    }
+
+    /** 从已落盘文件绑定（单片/分片合并共用），src 会被移动到目标位置 */
+    public String uploadFromDisk(String chapterSlug, String name, int instance, File src, String originalName)
+            throws IOException {
+        validateBinding(chapterSlug, name, instance);
+        if (src == null || !src.exists() || src.length() == 0) {
+            throw new IllegalArgumentException("请选择图片");
+        }
+        if (src.length() > MAX_SIZE) {
             throw new IllegalArgumentException("图片不能超过 10MB");
         }
         String ext = "";
-        String original = file.getOriginalFilename();
-        if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf('.') + 1).toLowerCase();
+        if (originalName != null && originalName.contains(".")) {
+            ext = originalName.substring(originalName.lastIndexOf('.') + 1).toLowerCase();
         }
         if (!ALLOWED_EXT.contains(ext)) {
             throw new IllegalArgumentException("仅支持 jpg / jpeg / png / webp 格式");
         }
 
-        var media = mediaService.uploadFile(file);
+        var media = mediaService.uploadFromDisk(src, originalName, src.length());
         String url = mediaService.getFileUrl(media);
 
         StoryCg existing = storyCgMapper.selectOne(new LambdaQueryWrapper<StoryCg>()
@@ -76,6 +87,18 @@ public class StoryCgService {
             storyCgMapper.insert(cg);
         }
         return url;
+    }
+
+    private void validateBinding(String chapterSlug, String name, int instance) {
+        if (chapterSlug == null || chapterSlug.isBlank()) {
+            throw new IllegalArgumentException("章节标识不能为空");
+        }
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("思绪名称不能为空");
+        }
+        if (instance < 1) {
+            throw new IllegalArgumentException("实例序号必须大于 0");
+        }
     }
 
     /** 章节已绑定图片列表：[{name, imageUrl, instance}] */

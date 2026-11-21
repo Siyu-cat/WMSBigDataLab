@@ -129,6 +129,76 @@ export async function uploadStoryCg(
   });
 }
 
+const CHUNK_SIZE = 128 * 1024;
+const INLINE_MAX_SIZE = 256 * 1024;
+const CHUNK_RETRY = 3;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * 分片上传思绪 CG 图片：>256KB 切成 128KB 小片逐片传（绕开大流量 QoS 与 CF 100s 超时），
+ * 单片失败自动重试；≤256KB 直传原接口。onProgress 回调「已完成片数/总片数」。
+ */
+export async function uploadStoryCgChunked(
+  chapterSlug: string,
+  name: string,
+  file: File,
+  instance = 1,
+  onProgress?: (done: number, total: number) => void,
+): Promise<{ name: string; imageUrl: string }> {
+  if (file.size <= INLINE_MAX_SIZE) {
+    onProgress?.(1, 1);
+    return uploadStoryCg(chapterSlug, name, file, instance);
+  }
+
+  const uploadId = crypto.randomUUID();
+  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+  const sendChunk = async (index: number) => {
+    const start = index * CHUNK_SIZE;
+    const chunk = file.slice(start, Math.min(start + CHUNK_SIZE, file.size));
+    const formData = new FormData();
+    formData.append('uploadId', uploadId);
+    formData.append('chunkIndex', String(index));
+    formData.append('totalChunks', String(totalChunks));
+    formData.append('file', chunk, `chunk-${index}`);
+    let lastErr: unknown;
+    for (let attempt = 0; attempt < CHUNK_RETRY; attempt++) {
+      try {
+        await request('/api/story/cg/chunk', { method: 'POST', body: formData });
+        return;
+      } catch (err) {
+        if (err instanceof UnauthorizedError) throw err;
+        lastErr = err;
+        await sleep(500 * 2 ** attempt);
+      }
+    }
+    throw lastErr instanceof Error ? lastErr : new Error('分片上传失败');
+  };
+
+  for (let i = 0; i < totalChunks; i++) {
+    await sendChunk(i);
+    onProgress?.(i + 1, totalChunks);
+    if (i < totalChunks - 1) {
+      await sleep(250);
+    }
+  }
+
+  const formData = new FormData();
+  formData.append('uploadId', uploadId);
+  formData.append('chapterSlug', chapterSlug);
+  formData.append('name', name);
+  formData.append('instance', String(instance));
+  formData.append('originalName', file.name || 'image.png');
+  formData.append('totalChunks', String(totalChunks));
+  return request('/api/story/cg/chunk-complete', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
 /** 大数据中心词条详情（公开接口） */
 export interface StoryEntryDetail {
   title: string;
